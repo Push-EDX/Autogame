@@ -1,7 +1,7 @@
-prefix=/home/blipi/Autogame/Install
+prefix=F:/Programming/Autogame/Install
 exec_prefix=${prefix}
-libdir=/home/blipi/Autogame/Install/lib/x86_64-linux-gnu
-includedir=/home/blipi/Autogame/Install/include
+libdir=F:/Programming/Autogame/Install/lib
+includedir=F:/Programming/Autogame/Install/include
 
 Name: TinyXML2
 Description: simple, small, C++ XML parser

@@ -1,8 +1,8 @@
-# Install script for directory: /home/blipi/Autogame/src
+# Install script for directory: F:/Programming/Autogame/src
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  SET(CMAKE_INSTALL_PREFIX "/home/blipi/Autogame/Install")
+  SET(CMAKE_INSTALL_PREFIX "F:/Programming/Autogame/Install")
 ENDIF(NOT DEFINED CMAKE_INSTALL_PREFIX)
 STRING(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -26,9 +26,4 @@ IF(NOT CMAKE_INSTALL_COMPONENT)
     SET(CMAKE_INSTALL_COMPONENT)
   ENDIF(COMPONENT)
 ENDIF(NOT CMAKE_INSTALL_COMPONENT)
-
-# Install shared libraries without execute permission?
-IF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
-  SET(CMAKE_INSTALL_SO_NO_EXE "1")
-ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 

@@ -1,6 +1,8 @@
-/home/blipi/Autogame/build/src/CMakeFiles/AutOgame.dir
-/home/blipi/Autogame/build/dep/tinyxml2/CMakeFiles/DATA_COPY.dir
-/home/blipi/Autogame/build/dep/happyhttp/CMakeFiles/happyHTTP.dir
-/home/blipi/Autogame/build/dep/tinyxml2/CMakeFiles/test.dir
-/home/blipi/Autogame/build/dep/tinyxml2/CMakeFiles/tinyxml2.dir
-/home/blipi/Autogame/build/dep/tinyxml2/CMakeFiles/tinyxml2static.dir
+F:/Programming/Autogame/build/dep/tinyxml2/CMakeFiles/ALL_BUILD.dir
+F:/Programming/Autogame/build/test/CMakeFiles/AutOGame-Test.dir
+F:/Programming/Autogame/build/src/CMakeFiles/AutOgame.dir
+F:/Programming/Autogame/build/dep/tinyxml2/CMakeFiles/DATA_COPY.dir
+F:/Programming/Autogame/build/CMakeFiles/ZERO_CHECK.dir
+F:/Programming/Autogame/build/dep/curl/lib/CMakeFiles/libcurl.dir
+F:/Programming/Autogame/build/dep/restclient-cpp/CMakeFiles/restclient-cpp.dir
+F:/Programming/Autogame/build/dep/tinyxml2/CMakeFiles/tinyxml2.dir

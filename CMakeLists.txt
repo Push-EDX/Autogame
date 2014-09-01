@@ -11,7 +11,7 @@
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/Install" CACHE PATH "Install path prefix" FORCE)
 
 # Set projecmtname (must be done AFTER setting configurationtypes)
-project(Autogame)
+project(AutOgame)
 
 # CMake policies (can not be handled elsewhere)
 cmake_minimum_required(VERSION 2.8)
@@ -39,3 +39,5 @@ add_subdirectory(dep)
 # add core sources
 add_subdirectory(src)
 
+# add test
+add_subdirectory(test)

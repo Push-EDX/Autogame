@@ -14,6 +14,7 @@ elseif( MSVC )
   add_definitions(/W0)
 endif()
 
-add_subdirectory(happyhttp)
+add_subdirectory(curl)
+add_subdirectory(restclient-cpp)
 add_subdirectory(tinyxml2)
 

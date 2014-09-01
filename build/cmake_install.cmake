@@ -1,8 +1,8 @@
-# Install script for directory: /home/blipi/Autogame
+# Install script for directory: F:/Programming/Autogame
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  SET(CMAKE_INSTALL_PREFIX "/home/blipi/Autogame/Install")
+  SET(CMAKE_INSTALL_PREFIX "F:/Programming/Autogame/Install")
 ENDIF(NOT DEFINED CMAKE_INSTALL_PREFIX)
 STRING(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -27,15 +27,11 @@ IF(NOT CMAKE_INSTALL_COMPONENT)
   ENDIF(COMPONENT)
 ENDIF(NOT CMAKE_INSTALL_COMPONENT)
 
-# Install shared libraries without execute permission?
-IF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
-  SET(CMAKE_INSTALL_SO_NO_EXE "1")
-ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
-
 IF(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  INCLUDE("/home/blipi/Autogame/build/dep/cmake_install.cmake")
-  INCLUDE("/home/blipi/Autogame/build/src/cmake_install.cmake")
+  INCLUDE("F:/Programming/Autogame/build/dep/cmake_install.cmake")
+  INCLUDE("F:/Programming/Autogame/build/src/cmake_install.cmake")
+  INCLUDE("F:/Programming/Autogame/build/test/cmake_install.cmake")
 
 ENDIF(NOT CMAKE_INSTALL_LOCAL_ONLY)
 
@@ -45,7 +41,7 @@ ELSE(CMAKE_INSTALL_COMPONENT)
   SET(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 ENDIF(CMAKE_INSTALL_COMPONENT)
 
-FILE(WRITE "/home/blipi/Autogame/build/${CMAKE_INSTALL_MANIFEST}" "")
+FILE(WRITE "F:/Programming/Autogame/build/${CMAKE_INSTALL_MANIFEST}" "")
 FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
-  FILE(APPEND "/home/blipi/Autogame/build/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+  FILE(APPEND "F:/Programming/Autogame/build/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
 ENDFOREACH(file)

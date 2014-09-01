@@ -1,2 +1,0 @@
-/usr/bin/ar cr libhappyHTTP.a  CMakeFiles/happyHTTP.dir/happyhttp.cpp.o CMakeFiles/happyHTTP.dir/test.cpp.o
-/usr/bin/ranlib libhappyHTTP.a

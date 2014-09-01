@@ -1,0 +1,10 @@
+﻿Build started 01/09/2014 21:15:40.
+     1>Project "F:\Programming\Autogame\build\test\AutOGame-Test.vcxproj" on node 3 (Build target(s)).
+     1>Link:
+         F:\Archivos de programa (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"F:\Programming\Autogame\build\test\Debug\AutOGame-Test.exe" /INCREMENTAL /NOLOGO /LIBPATH:"F:\Program Files (x86)\Visual Leak Detector\lib\Win32" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib ..\src\Debug\AutOgame.lib "..\dep\restclient-cpp\Debug\restclient-cpp.lib" ..\dep\curl\lib\Debug\libcurl.lib winmm.lib ws2_32.lib "C:\OpenSSL-Win32\lib\VC\ssleay32MDd.lib" "C:\OpenSSL-Win32\lib\VC\libeay32MDd.lib" winmm.lib ws2_32.lib "C:\OpenSSL-Win32\lib\VC\ssleay32MDd.lib" "C:\OpenSSL-Win32\lib\VC\libeay32MDd.lib" ..\dep\tinyxml2\Debug\tinyxml2.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"F:/Programming/Autogame/build/test/Debug/AutOGame-Test.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"F:/Programming/Autogame/build/test/Debug/AutOGame-Test.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug "AutOGame-Test.dir\Debug\Test.obj"
+         AutOGame-Test.vcxproj -> F:\Programming\Autogame\build\test\Debug\AutOGame-Test.exe
+     1>Done Building Project "F:\Programming\Autogame\build\test\AutOGame-Test.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.27

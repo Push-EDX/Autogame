@@ -1,0 +1,10 @@
+﻿Build started 01/09/2014 19:34:46.
+     1>Project "F:\Programming\Autogame\build\dep\tinyxml2\tinyxml2static.vcxproj" on node 3 (Build target(s)).
+     1>Lib:
+         F:\Archivos de programa (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"F:\Programming\Autogame\build\dep\tinyxml2\Debug\tinyxml2.lib" /LIBPATH:"F:\Program Files (x86)\Visual Leak Detector\lib\Win32" /NOLOGO tinyxml2static.dir\Debug\tinyxml2.obj
+         tinyxml2static.vcxproj -> F:\Programming\Autogame\build\dep\tinyxml2\Debug\tinyxml2.lib
+     1>Done Building Project "F:\Programming\Autogame\build\dep\tinyxml2\tinyxml2static.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.10

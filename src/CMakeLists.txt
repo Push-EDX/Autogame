@@ -8,7 +8,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-file(GLOB_RECURSE sources_Init Init/*.cpp Init/*.h)
+file(GLOB_RECURSE sources_Init Init/*.cpp Init/*.hpp)
 
 set(EPS_SRCS
   ${EPS_SRCS}
@@ -17,21 +17,20 @@ set(EPS_SRCS
 
 include_directories(
   ${CMAKE_BINARY_DIR}
-  ${CMAKE_SOURCE_DIR}/dep/happyhttp
+  ${CMAKE_SOURCE_DIR}/dep/curl/include
+  ${CMAKE_SOURCE_DIR}/dep/restclient-cpp/include
   ${CMAKE_SOURCE_DIR}/dep/tinyxml2
 
   ${CMAKE_CURRENT_SOURCE_DIR}/Init
-
-  ${OPENSSL_INCLUDE_DIR}
 )
 
-add_library(AutOgame
+add_library(AutOgame STATIC 
   ${EPS_SRCS}
 )
 
 target_link_libraries(AutOgame
-  happyHTTP
-  tinyXML2
+  restclient-cpp
+  tinyxml2
 )
 
 #install(TARGETS FastServer DESTINATION "${CMAKE_INSTALL_PREFIX}")
