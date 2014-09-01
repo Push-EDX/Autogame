@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/blipi/Autogame/dep/happyhttp/happyhttp.h
+string
+-
+map
+-
+vector
+-
+deque
+-
+
+/home/blipi/Autogame/dep/happyhttp/test.cpp
+happyhttp.h
+/home/blipi/Autogame/dep/happyhttp/happyhttp.h
+cstdio
+-
+cstring
+-
+winsock2.h
+-
+

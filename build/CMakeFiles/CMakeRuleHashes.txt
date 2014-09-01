@@ -1,0 +1,2 @@
+# Hashes of file build rules.
+c82a18a5dc9d81071b427b5af4e58eac dep/tinyxml2/CMakeFiles/DATA_COPY

@@ -1,0 +1,2 @@
+/usr/bin/ar cr libNetAdapter.a  CMakeFiles/NetAdapter.dir/happyhttp.cpp.o
+/usr/bin/ranlib libNetAdapter.a

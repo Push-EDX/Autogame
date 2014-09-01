@@ -1,0 +1,6 @@
+/home/blipi/Autogame/build/src/CMakeFiles/AutOgame.dir
+/home/blipi/Autogame/build/dep/tinyxml2/CMakeFiles/DATA_COPY.dir
+/home/blipi/Autogame/build/dep/happyhttp/CMakeFiles/happyHTTP.dir
+/home/blipi/Autogame/build/dep/tinyxml2/CMakeFiles/test.dir
+/home/blipi/Autogame/build/dep/tinyxml2/CMakeFiles/tinyxml2.dir
+/home/blipi/Autogame/build/dep/tinyxml2/CMakeFiles/tinyxml2static.dir

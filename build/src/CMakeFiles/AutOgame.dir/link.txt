@@ -1,0 +1,2 @@
+/usr/bin/ar cr libAutOgame.a  CMakeFiles/AutOgame.dir/Init/Autogame.cpp.o
+/usr/bin/ranlib libAutOgame.a

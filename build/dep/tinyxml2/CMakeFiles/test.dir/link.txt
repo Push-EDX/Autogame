@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++0x -O3 -DNDEBUG    CMakeFiles/test.dir/xmltest.cpp.o  -o test -rdynamic libtinyxml2.so.2.1.0 -Wl,-rpath,/home/blipi/Autogame/build/dep/tinyxml2 
