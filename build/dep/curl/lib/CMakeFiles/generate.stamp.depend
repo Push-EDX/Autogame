@@ -1,5 +1,0 @@
-# CMake generation dependency list for this directory.
-F:/Programming/Autogame/dep/curl/lib/CMakeLists.txt
-F:/Programming/Autogame/dep/curl/include/curl/curlbuild.h.cmake
-F:/Programming/Autogame/dep/curl/lib/curl_config.h.cmake
-F:/Programming/Autogame/build/dep/curl/lib/Makefile.inc.cmake

@@ -1,9 +1,0 @@
-﻿Build started 01/09/2014 19:36:13.
-     1>Project "F:\Programming\Autogame\build\dep\curl\lib\libcurl.vcxproj" on node 2 (Build target(s)).
-     1>Lib:
-         libcurl.vcxproj -> F:\Programming\Autogame\build\dep\curl\lib\Debug\libcurl.lib
-     1>Done Building Project "F:\Programming\Autogame\build\dep\curl\lib\libcurl.vcxproj" (Build target(s)).
-
-Build succeeded.
-
-Time Elapsed 00:00:00.15
