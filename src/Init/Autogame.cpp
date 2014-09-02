@@ -1,17 +1,157 @@
 #include "Autogame.hpp"
 
 #include <restclient-cpp/restclient.h>
-#include <tinyxml2.h>
+#include <htmlcxx/ParserDom.h>
 
 #include <string>
 #include <sstream>
 #include <vector>
+#include <iostream>
+
+namespace htmlcxx
+{
+    namespace HTML
+    {
+        struct NodeEx
+        {
+            bool found;
+            Node node;
+            std::string text;
+
+            long from;
+        };
+
+        std::string getText(tree<Node> dom, tree<Node>::iterator node)
+        {
+            std::string str = std::string();
+            
+            int n = node.number_of_children();
+            if (n == 0)
+                return str;
+
+            tree_node_<Node>* it = node.node->first_child;
+
+            while (n > 0)
+            {
+                tree<Node> child = it;
+                Node node = (*child.begin());
+
+                if (!node.isTag())
+                    str.append(node.text());
+
+                it = it->next_sibling;
+                n--;
+            }
+
+            return str;
+        }
+
+        NodeEx findFirst(tree<Node> dom, std::string tagName)
+        {
+            tree<Node>::iterator it = dom.begin();
+            tree<Node>::iterator end = dom.end();
+
+            long i = 0;
+            for (; it != end; ++it, ++i)
+            {
+                if (it->tagName().compare(tagName) == 0)
+                {
+                    return{ true, *it, getText(dom, it), i };
+                }
+            }
+
+            return{ false, Node(), std::string(), 0 };
+        }
+
+        NodeEx findID(tree<Node> dom, std::string ID)
+        {
+            tree<Node>::iterator it = dom.begin();
+            tree<Node>::iterator end = dom.end();
+
+            long i = 0;
+            for (; it != end; ++it, ++i)
+            {
+                if (it->isTag())
+                {
+                    it->parseAttributes();
+                    Attribute attr = it->attribute("id");
+                    
+                    if (attr.first)
+                    {
+                        if (attr.second.compare(ID) == 0)
+                        {
+                            return { true, *it, getText(dom, it), i };
+                        }
+                    }
+                }
+            }
+
+            return{ false, Node(), std::string(), 0 };
+        }
+
+        NodeEx findClass(tree<Node> dom, long from, std::string cls)
+        {
+            tree<Node>::iterator it = dom.begin();
+            tree<Node>::iterator end = dom.end();
+
+            std::advance(it, from);
+
+            long i = from;
+            for (; it != end; ++it, ++i)
+            {
+                if (it->isTag())
+                {
+                    it->parseAttributes();
+                    Attribute attr = it->attribute("class");
+
+                    if (attr.first)
+                    {
+                        if (attr.second.find(cls) == std::string::npos)
+                            continue;
+
+                        std::istringstream iss(attr.second);
+                        std::string _cls;
+
+                        while (std::getline(iss, _cls, ' '))
+                        {
+                            if (_cls.compare(cls) == 0)
+                            {
+                                return{ true, *it, getText(dom, it), i };
+                            }
+                        }
+                    }
+                }
+            }
+
+            return{ false, Node(), std::string(), 0 };
+        }
+
+        NodeEx findClass(tree<Node> dom, std::string cls)
+        {
+            return findClass(dom, 0, cls);
+        }
+
+    }
+}
 
 namespace autogame
 {
     // Forward declarations
     void updateOverview();
+    void updateResources();
 
+    struct Building
+    {
+        std::string name;
+        char level;
+
+        struct Costs
+        {
+            long long metal;
+            long long crystal;
+            long long deuterium;
+        } costs;
+    };
 
     // Internal struct
     struct Autogame
@@ -20,7 +160,21 @@ namespace autogame
         // Base domains
         std::string gameURL;
         std::string serverURL;
-        std::string sessionID;
+
+        // Cookies
+        RestClient::cookiesmap cookies;
+        std::string getCookies()
+        {
+            std::string cookiesStr = std::string();
+
+            for (RestClient::cookiesmap::iterator it = cookies.begin(); it != cookies.end(); ++it)
+                cookiesStr.append(it->first).append("=").append(it->second.value).append(";");
+
+            return cookiesStr;
+        }
+
+        // Building levels
+        Building buildings[256];
 
         // App State
         STATE state;
@@ -65,25 +219,16 @@ namespace autogame
 
         if (r.code == 302)
         {
-            tinyxml2::XMLDocument doc;
-            tinyxml2::XMLError result = doc.Parse(r.body.c_str());
+            htmlcxx::HTML::ParserDom parser;
+            tree<htmlcxx::HTML::Node> dom = parser.parseTree(r.body.c_str());
 
-            // Can not parse HTML
-            if (result != tinyxml2::XML_NO_ERROR)
-            {
+            htmlcxx::HTML::NodeEx node = htmlcxx::HTML::findFirst(dom, "script");
+            if (!node.found)
                 return LIBRARY_ERROR;
-            }
-
-            tinyxml2::XMLElement* script = doc.FirstChildElement("script");
-            // Can not find <script> tag
-            if (!script)
-            {
-                return LIBRARY_ERROR;
-            }
 
             // Get the URL
-            std::string redirect = script->GetText();
-            redirect = redirect.substr(redirect.find_first_of("=") + 1, -1);
+            std::string redirect = node.text;
+            redirect = redirect.substr(redirect.find_first_of('=') + 1, -1);
 
             // Incorrect username/password
             if (redirect.find("/loginError") != std::string::npos)
@@ -97,14 +242,10 @@ namespace autogame
                 return LIBRARY_ERROR;
             }
 
-            ao->sessionID = redirect.substr(session + 1);
-            /*
-            for (RestClient::headermap::iterator it = r.headers.begin(); it != r.headers.end(); ++it)
+            for (RestClient::cookiesmap::iterator it = r.cookies.begin(); it != r.cookies.end(); ++it)
             {
-                printf("%s: %s\n", (*it).first.c_str(), (*it).second.c_str());
+                ao->cookies[it->first] = it->second;
             }
-            printf("\nBODY: %s\n\n", r.body.c_str());
-            */
 
             ao->state = LOGGED;
             return LIBRARY_OK;
@@ -129,47 +270,31 @@ namespace autogame
         // OK:       serverURL/...
         if (r.code == 303)
         {
-            // Ogame sends the first "<meta" not closed...
-            // Ogame does not append an HTML closing tag...
-            r.body.replace(r.body.find_first_of(">", r.body.find("meta")), 1, " />", 0, 3);
-            r.body.append("</html>");
+            htmlcxx::HTML::ParserDom parser;
+            tree<htmlcxx::HTML::Node> dom = parser.parseTree(r.body.c_str());
 
-            tinyxml2::XMLDocument doc;
-            tinyxml2::XMLError result = doc.Parse(r.body.c_str());
-
-            // Can not parse HTML
-            if (result != tinyxml2::XML_NO_ERROR)
-            {
+            htmlcxx::HTML::NodeEx node = htmlcxx::HTML::findFirst(dom, "meta");
+            if (!node.found)
                 return LIBRARY_ERROR;
-            }
-
-            tinyxml2::XMLElement* meta = doc.FirstChildElement("html")->FirstChildElement("head")->FirstChildElement("meta");
-            // Can not find <meta> tag
-            if (!meta)
-            {
-                return LIBRARY_ERROR;
-            }
-
-            std::string content(meta->Attribute("content"));
-            std::size_t url = content.find("url=");
-            if (url == std::string::npos)
-            {
-                return LIBRARY_ERROR;
-            }
-
-            // Login data is incorrect
-            content = content.substr(url + 4);
-            if (content.substr(content.find_last_of('/')).compare("/loginError") == 0)
-            {
-                return ERROR_LOGIN_ERROR;
-            }
             
-            for (RestClient::headermap::iterator it = r.headers.begin(); it != r.headers.end(); ++it)
+            node.node.parseAttributes();
+            htmlcxx::HTML::Attribute meta = node.node.attribute("content");
+                    
+            if (meta.first)
             {
-                printf("%s: %s\n", (*it).first.c_str(), (*it).second.c_str());
+                std::size_t url = meta.second.find("url=");
+                if (url != std::string::npos)
+                {
+                    // Login data is incorrect
+                    std::string content = meta.second.substr(url + 4);
+                    if (content.substr(content.find_last_of('/')).compare("/loginError") == 0)
+                    {
+                        return ERROR_LOGIN_ERROR;
+                    }
+
+                    return LoginEx(content);
+                }
             }
-            
-            return LoginEx(content);
         }
 
         return LIBRARY_ERROR;
@@ -184,6 +309,7 @@ namespace autogame
 
         // Check overview
         updateOverview();
+        updateResources();
 
         return LIBRARY_OK;
     }
@@ -191,15 +317,48 @@ namespace autogame
     void updateOverview()
     {
         std::string url = ao->serverURL + "/game/index.php?page=overview";
-        printf("URL: %s\n", url.c_str());
 
-        RestClient::setCookies("language=es;" + ao->sessionID);
+        RestClient::setCookies(ao->getCookies());
         RestClient::response r = RestClient::get(url);
         RestClient::setReferer(url);
 
-        tinyxml2::XMLDocument doc;
-        tinyxml2::XMLError result = doc.Parse(r.body.c_str());
+        htmlcxx::HTML::ParserDom parser;
+        tree<htmlcxx::HTML::Node> dom = parser.parseTree(r.body.c_str());
+    }
 
-        printf("%d: %s\n\n", r.code, r.body.c_str());
+    bool updateBuilding(tree<htmlcxx::HTML::Node> dom, long from, int building)
+    {
+        htmlcxx::HTML::NodeEx node = htmlcxx::HTML::findClass(dom, from, std::string("supply").append(std::to_string(building)));
+        if (node.found)
+        {
+            node = htmlcxx::HTML::findClass(dom, node.from, "level");
+            if (node.found)
+            {
+                //ao->buildings[building].level = atoi(RestClient::trim(node.text).c_str());
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void updateResources()
+    {
+        std::string url = ao->serverURL + "/game/index.php?page=resources";
+
+        RestClient::setCookies(ao->getCookies());
+        RestClient::response r = RestClient::get(url);
+        RestClient::setReferer(url);
+
+        htmlcxx::HTML::ParserDom parser;
+        tree<htmlcxx::HTML::Node> dom = parser.parseTree(r.body.c_str());
+
+        htmlcxx::HTML::NodeEx content = htmlcxx::HTML::findClass(dom, "content");
+
+        for (int i = 1; i <= 12; ++i)
+        {
+            updateBuilding(dom, content.from, i);
+            printf("Supply%d: %d\n", i, ao->buildings[i].level);
+        }
     }
 }

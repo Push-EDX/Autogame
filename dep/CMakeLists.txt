@@ -16,5 +16,6 @@ endif()
 
 add_subdirectory(curl)
 add_subdirectory(restclient-cpp)
-add_subdirectory(tinyxml2)
+add_subdirectory(htmlcxx)
+add_subdirectory(libtidy)
 

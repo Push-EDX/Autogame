@@ -11,8 +11,13 @@
 
 #include <cstring>
 #include <string>
+#include <sstream>
+#include <ctime>
+#include <locale>
+#include <iomanip>
 #include <iostream>
 #include <map>
+#include <time.h>
 
 /** initialize user agent string */
 const char* RestClient::user_agent = "restclient-cpp/" VERSION;
@@ -57,11 +62,13 @@ RestClient::response RestClient::get(const std::string& url)
     if (!RestClient::_cookies.empty())
     {
         curl_easy_setopt(curl, CURLOPT_COOKIE, RestClient::_cookies.c_str());
+        RestClient::_cookies.clear();
     }
 
     if (!RestClient::_referer.empty())
     {
         curl_easy_setopt(curl, CURLOPT_REFERER, RestClient::_referer.c_str());
+        RestClient::_referer.clear();
     }
 
     /** set user agent */
@@ -124,6 +131,19 @@ RestClient::response RestClient::post(const std::string& url,
       curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
       curl_easy_setopt(curl, CURLOPT_USERPWD, RestClient::user_pass.c_str());
     }
+
+    if (!RestClient::_cookies.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_COOKIE, RestClient::_cookies.c_str());
+        RestClient::_cookies.clear();
+    }
+
+    if (!RestClient::_referer.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_REFERER, RestClient::_referer.c_str());
+        RestClient::_referer.clear();
+    }
+
     /** set user agent */
     curl_easy_setopt(curl, CURLOPT_USERAGENT, RestClient::user_agent);
     /** set query URL */
@@ -353,7 +373,67 @@ size_t RestClient::header_callback(void *data, size_t size, size_t nmemb,
     trim(key);
     std::string value = header.substr(seperator + 1);
     trim (value);
-    r->headers[key] = value;
+
+    if (key.compare("Set-Cookie") == 0)
+    {
+        RestClient::cookie c;
+        size_t equalSeparator = value.find_first_of('=');
+        if (equalSeparator == std::string::npos)
+            return (size * nmemb);
+        
+        c.name = value.substr(0, equalSeparator);
+        seperator = value.find_first_of(';');
+
+        if (seperator == std::string::npos)
+            c.value = value.substr(equalSeparator + 1);
+        else
+            c.value = value.substr(equalSeparator + 1, seperator - equalSeparator - 1);
+
+        trim(c.name);
+        trim(c.value);
+
+        while (seperator != std::string::npos)
+        {
+            std::string section = std::string();
+
+            int end = value.find_first_of(';', seperator + 1);
+            if (end != std::string::npos)
+                section = value.substr(seperator + 1, end - seperator - 1);
+            else
+                section = value.substr(seperator + 1);
+
+            size_t internalSeparator = section.find_first_of('=');
+            if (internalSeparator != std::string::npos)
+            {
+                std::string cookieKey = section.substr(0, internalSeparator);
+                trim(cookieKey);
+                std::string cookieValue = section.substr(internalSeparator + 1);
+                trim(cookieValue);
+
+                if (cookieKey.compare("expires") == 0)
+                {
+                    // Remove GMT from string
+                    cookieValue = trim(cookieValue.substr(0, cookieValue.length()-4));
+
+                    std::tm t;
+                    std::istringstream ss(cookieValue);
+                    ss >> std::get_time(&t, "%a, %d-%b-%Y %H:%M:%S"); //Wdy, DD-Mon-YYYY HH:MM:SS GMT
+                    
+                    c.expires = _mkgmtime(&t);
+                }
+                else if (cookieKey.compare("path") == 0)
+                    c.path = cookieValue;
+                else if (cookieKey.compare("domain") == 0)
+                    c.domain = cookieValue;
+            }
+
+            seperator = end;
+        }
+
+        r->cookies[c.name] = c;
+    }
+    else
+        r->headers[key] = value;
   }
 
   return (size * nmemb);
