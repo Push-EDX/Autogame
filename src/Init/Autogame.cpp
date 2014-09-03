@@ -1,156 +1,52 @@
 #include "Autogame.hpp"
+#include <Building.hpp>
+#include <Utils.hpp>
 
 #include <restclient-cpp/restclient.h>
-#include <htmlcxx/ParserDom.h>
+#include <tinyxml2.h>
+#include <tidy.h>
+#include <buffio.h>
 
 #include <string>
 #include <sstream>
 #include <vector>
 #include <iostream>
 
-namespace htmlcxx
-{
-    namespace HTML
-    {
-        struct NodeEx
-        {
-            bool found;
-            Node node;
-            std::string text;
 
-            long from;
-        };
-
-        std::string getText(tree<Node> dom, tree<Node>::iterator node)
-        {
-            std::string str = std::string();
-            
-            int n = node.number_of_children();
-            if (n == 0)
-                return str;
-
-            tree_node_<Node>* it = node.node->first_child;
-
-            while (n > 0)
-            {
-                tree<Node> child = it;
-                Node node = (*child.begin());
-
-                if (!node.isTag())
-                    str.append(node.text());
-
-                it = it->next_sibling;
-                n--;
-            }
-
-            return str;
-        }
-
-        NodeEx findFirst(tree<Node> dom, std::string tagName)
-        {
-            tree<Node>::iterator it = dom.begin();
-            tree<Node>::iterator end = dom.end();
-
-            long i = 0;
-            for (; it != end; ++it, ++i)
-            {
-                if (it->tagName().compare(tagName) == 0)
-                {
-                    return{ true, *it, getText(dom, it), i };
-                }
-            }
-
-            return{ false, Node(), std::string(), 0 };
-        }
-
-        NodeEx findID(tree<Node> dom, std::string ID)
-        {
-            tree<Node>::iterator it = dom.begin();
-            tree<Node>::iterator end = dom.end();
-
-            long i = 0;
-            for (; it != end; ++it, ++i)
-            {
-                if (it->isTag())
-                {
-                    it->parseAttributes();
-                    Attribute attr = it->attribute("id");
-                    
-                    if (attr.first)
-                    {
-                        if (attr.second.compare(ID) == 0)
-                        {
-                            return { true, *it, getText(dom, it), i };
-                        }
-                    }
-                }
-            }
-
-            return{ false, Node(), std::string(), 0 };
-        }
-
-        NodeEx findClass(tree<Node> dom, long from, std::string cls)
-        {
-            tree<Node>::iterator it = dom.begin();
-            tree<Node>::iterator end = dom.end();
-
-            std::advance(it, from);
-
-            long i = from;
-            for (; it != end; ++it, ++i)
-            {
-                if (it->isTag())
-                {
-                    it->parseAttributes();
-                    Attribute attr = it->attribute("class");
-
-                    if (attr.first)
-                    {
-                        if (attr.second.find(cls) == std::string::npos)
-                            continue;
-
-                        std::istringstream iss(attr.second);
-                        std::string _cls;
-
-                        while (std::getline(iss, _cls, ' '))
-                        {
-                            if (_cls.compare(cls) == 0)
-                            {
-                                return{ true, *it, getText(dom, it), i };
-                            }
-                        }
-                    }
-                }
-            }
-
-            return{ false, Node(), std::string(), 0 };
-        }
-
-        NodeEx findClass(tree<Node> dom, std::string cls)
-        {
-            return findClass(dom, 0, cls);
-        }
-
-    }
-}
+#define SAFE_CHILD(x,y) if (!x) return LIBRARY_ERROR; else x = x->FirstChildElement(y)
+#define SAFE_SIBLING(x,y) if (!x) return LIBRARY_ERROR; else x = x->NextSiblingElement(y)
 
 namespace autogame
 {
     // Forward declarations
-    void updateOverview();
-    void updateResources();
+    int updateOverview();
+    int updateResources();
 
-    struct Building
+    struct Planet
     {
+        // Name
         std::string name;
-        char level;
 
-        struct Costs
+        // Min-Max temp
+        int minTemp;
+        int maxTemp;
+
+        struct Coordinates
         {
-            long long metal;
-            long long crystal;
-            long long deuterium;
-        } costs;
+            int galaxy;
+            int system;
+            int position;
+        } coordinates;
+
+        // Building levels
+        std::map<int, Building> buildings;
+
+        Planet(std::string nm)
+        {
+            name = nm;
+            minTemp = 0;
+            maxTemp = 0;
+        }
     };
 
     // Internal struct
@@ -173,16 +69,25 @@ namespace autogame
             return cookiesStr;
         }
 
-        // Building levels
-        Building buildings[256];
+        // Planets
+        std::vector<Planet> planets;
+        Planet* currentPlanet;
 
         // App State
         STATE state;
+
+        // Constructor
+        Autogame()
+        {
+            gameURL = std::string();
+            serverURL = std::string();
+            currentPlanet = NULL;
+            state = UNAUTHORIZED;
+        }
     } *ao;
 
     // Sessions holder
     std::vector<Autogame*> sessions;
-
 
     int Init(const char* region, int server)
     {
@@ -219,16 +124,33 @@ namespace autogame
 
         if (r.code == 302)
         {
-            htmlcxx::HTML::ParserDom parser;
-            tree<htmlcxx::HTML::Node> dom = parser.parseTree(r.body.c_str());
+            tinyxml2::XMLDocument doc;
+            tinyxml2::XMLError result = doc.Parse(html_xml(r.body).c_str());
 
-            htmlcxx::HTML::NodeEx node = htmlcxx::HTML::findFirst(dom, "script");
-            if (!node.found)
+            // Can not parse HTML
+            if (result != tinyxml2::XML_NO_ERROR)
+            {
                 return LIBRARY_ERROR;
+            }
+
+            tinyxml2::XMLElement* script = doc.FirstChildElement("html");
+            SAFE_CHILD(script, "head");
+            SAFE_CHILD(script, "script");
+
+            // Can not find <script> tag
+            if (!script)
+            {
+                return LIBRARY_ERROR;
+            }
 
             // Get the URL
-            std::string redirect = node.text;
-            redirect = redirect.substr(redirect.find_first_of('=') + 1, -1);
+            std::string redirect = script->GetText();
+            std::size_t seperator = redirect.find_first_of('=');
+            if (seperator == std::string::npos)
+                return LIBRARY_ERROR;
+
+            // Get the URL without quotes
+            redirect = redirect.substr(seperator + 2, redirect.length() - seperator - 4);
 
             // Incorrect username/password
             if (redirect.find("/loginError") != std::string::npos)
@@ -270,31 +192,48 @@ namespace autogame
         // OK:       serverURL/...
         if (r.code == 303)
         {
-            htmlcxx::HTML::ParserDom parser;
-            tree<htmlcxx::HTML::Node> dom = parser.parseTree(r.body.c_str());
+            tinyxml2::XMLDocument doc;
+            tinyxml2::XMLError result = doc.Parse(html_xml(r.body).c_str());
 
-            htmlcxx::HTML::NodeEx node = htmlcxx::HTML::findFirst(dom, "meta");
-            if (!node.found)
-                return LIBRARY_ERROR;
-            
-            node.node.parseAttributes();
-            htmlcxx::HTML::Attribute meta = node.node.attribute("content");
-                    
-            if (meta.first)
+            // Can not parse HTML
+            if (result != tinyxml2::XML_NO_ERROR)
             {
-                std::size_t url = meta.second.find("url=");
-                if (url != std::string::npos)
-                {
-                    // Login data is incorrect
-                    std::string content = meta.second.substr(url + 4);
-                    if (content.substr(content.find_last_of('/')).compare("/loginError") == 0)
-                    {
-                        return ERROR_LOGIN_ERROR;
-                    }
-
-                    return LoginEx(content);
-                }
+                return LIBRARY_ERROR;
             }
+
+            // Skip the first meta and get the one we want
+            tinyxml2::XMLElement* meta = doc.FirstChildElement("html");
+            SAFE_CHILD(meta, "head");
+            SAFE_CHILD(meta, "meta");
+            SAFE_SIBLING(meta, "meta");
+
+            // Can not find <meta> tag
+            if (!meta)
+            {
+                return LIBRARY_ERROR;
+            }
+
+            const char* attr = meta->Attribute("content");
+            if (!attr)
+            {
+                return LIBRARY_ERROR;
+            }
+
+            std::string content(attr);
+            std::size_t url = content.find("url=");
+            if (url == std::string::npos)
+            {
+                return LIBRARY_ERROR;
+            }
+
+            // Login data is incorrect
+            content = content.substr(url + 4);
+            if (content.substr(content.find_last_of('/')).compare("/loginError") == 0)
+            {
+                return ERROR_LOGIN_ERROR;
+            }
+
+            return LoginEx(content);
         }
 
         return LIBRARY_ERROR;
@@ -314,7 +253,7 @@ namespace autogame
         return LIBRARY_OK;
     }
 
-    void updateOverview()
+    int updateOverview()
     {
         std::string url = ao->serverURL + "/game/index.php?page=overview";
 
@@ -322,43 +261,184 @@ namespace autogame
         RestClient::response r = RestClient::get(url);
         RestClient::setReferer(url);
 
-        htmlcxx::HTML::ParserDom parser;
-        tree<htmlcxx::HTML::Node> dom = parser.parseTree(r.body.c_str());
+        tinyxml2::XMLDocument doc;
+        tinyxml2::XMLError result = doc.Parse(html_xml(r.body).c_str());
+
+        // Can not parse HTML
+        if (result != tinyxml2::XML_NO_ERROR)
+        {
+            return LIBRARY_ERROR;
+        }
+
+        // Get document
+        tinyxml2::XMLElement* body = doc.FirstChildElement("html");
+
+        // Get planet
+        Planet* planet = NULL;
+
+        if (body)
+        {
+            tinyxml2::XMLElement* nameElement = findByName(body, "ogame-planet-name");
+            if (nameElement)
+            {
+                if (nameElement->Attribute("content"))
+                {
+                    std::string name(nameElement->Attribute("content"));
+
+                    for (std::vector<Planet>::iterator it = ao->planets.begin(); it != ao->planets.end(); ++it)
+                    {
+                        if (it->name.compare(name) == 0)
+                        {
+                            planet = &*it;
+                            break;
+                        }
+                    }
+
+                    if (!planet)
+                    {
+                        planet = &*ao->planets.insert(ao->planets.begin(), Planet(name));
+                    }
+                }
+            }
+        }
+
+        if (planet)
+        {
+            ao->currentPlanet = planet;
+
+            if (body)
+            {
+                tinyxml2::XMLElement* coordinatesElement = findByName(body, "ogame-planet-coordinates");
+                if (coordinatesElement)
+                {
+                    if (coordinatesElement->Attribute("content"))
+                    {
+                        std::string coordinates(coordinatesElement->Attribute("content"));
+
+                        int cord[3] = { 0 };
+                        int n = 0;
+                        size_t pos = 0;
+                        std::string token;
+                        while ((pos = coordinates.find(":")) != std::string::npos) {
+                            token = coordinates.substr(0, pos);
+                            coordinates.erase(0, pos + 1/*delimiter.length()*/);
+                            cord[n++] = atoi(token.c_str());
+                        }
+                        cord[2] = atoi(coordinates.c_str());
+
+                        ao->currentPlanet->coordinates.galaxy = cord[0];
+                        ao->currentPlanet->coordinates.system = cord[1];
+                        ao->currentPlanet->coordinates.position = cord[2];
+                    }
+                }
+            }
+
+            tinyxml2::XMLElement* temperature = findByClass(body, "planetlink");
+            if (temperature)
+            {
+                if (temperature->Attribute("title"))
+                {
+                    std::string coordinates(temperature->Attribute("title"));
+
+                    int n = 0;
+                    int last = coordinates.length();
+                    size_t pos = 0;
+                    std::string token;
+                    while ((pos = coordinates.rfind(" ")) != std::string::npos) {
+                        token = coordinates.substr(pos+1, last);
+                        coordinates.erase(pos, last);
+                        last = pos;
+
+                        if (is_number(token))
+                        {
+                            if (n == 0)
+                                planet->maxTemp = atoi(token.c_str());
+                            else if (n == 1)
+                                planet->minTemp = atoi(token.c_str());
+                            ++n;
+                        }
+                    }
+                }
+            }
+
+            printf("PLANET: %s [%d - %d]\n", planet->name.c_str(), planet->minTemp, planet->maxTemp);
+        }
+
+        return LIBRARY_OK;
     }
 
-    bool updateBuilding(tree<htmlcxx::HTML::Node> dom, long from, int building)
+    bool updateBuilding(tinyxml2::XMLElement* content, int building)
     {
-        htmlcxx::HTML::NodeEx node = htmlcxx::HTML::findClass(dom, from, std::string("supply").append(std::to_string(building)));
-        if (node.found)
+        std::string cls = std::string("supply").append(std::to_string(building));
+        tinyxml2::XMLElement* supply = findByClass(content, cls);
+
+        if (supply)
         {
-            node = htmlcxx::HTML::findClass(dom, node.from, "level");
-            if (node.found)
+            supply = findByClass(supply, "level");
+            if (supply)
             {
-                //ao->buildings[building].level = atoi(RestClient::trim(node.text).c_str());
-                return true;
+                // Delete the inner span (if any)
+                if (supply->FirstChildElement())
+                {
+                    supply->DeleteChild(supply->FirstChildElement());
+                }
+
+                if (supply->GetText())
+                {
+                    std::string levelStr = supply->GetText();
+                    int level = atoi(RestClient::trim(levelStr).c_str());
+                    ao->currentPlanet->buildings[building].level = level;
+                    ao->currentPlanet->buildings[building].costs = COST(building, level);
+                    ao->currentPlanet->buildings[building].production = PRODUCTION(building, level, ao->currentPlanet->maxTemp);
+
+                    printf("BUILDING %d: %d\t[%.1f %.1f %.1f]\t[%.1f %.1f %.1f]\n", building, level, ao->currentPlanet->buildings[building].costs.metal, ao->currentPlanet->buildings[building].costs.crystal, ao->currentPlanet->buildings[building].costs.deuterium, ao->currentPlanet->buildings[building].production.metal, ao->currentPlanet->buildings[building].production.crystal, ao->currentPlanet->buildings[building].production.deuterium);
+
+                    return true;
+                }
             }
         }
 
         return false;
     }
 
-    void updateResources()
+    int updateResources()
     {
+        if (!ao->currentPlanet)
+            return LIBRARY_ERROR;
+
         std::string url = ao->serverURL + "/game/index.php?page=resources";
 
         RestClient::setCookies(ao->getCookies());
         RestClient::response r = RestClient::get(url);
         RestClient::setReferer(url);
 
-        htmlcxx::HTML::ParserDom parser;
-        tree<htmlcxx::HTML::Node> dom = parser.parseTree(r.body.c_str());
-
-        htmlcxx::HTML::NodeEx content = htmlcxx::HTML::findClass(dom, "content");
-
-        for (int i = 1; i <= 12; ++i)
+        tinyxml2::XMLDocument doc;
+        tinyxml2::XMLError result = doc.Parse(html_xml(r.body).c_str());
+        
+        // Can not parse HTML
+        if (result != tinyxml2::XML_NO_ERROR)
         {
-            updateBuilding(dom, content.from, i);
-            printf("Supply%d: %d\n", i, ao->buildings[i].level);
+            return LIBRARY_ERROR;
+        }
+
+        // Skip the first meta and get the one we want
+        tinyxml2::XMLElement* body = doc.FirstChildElement("html");
+        SAFE_CHILD(body, "body");
+        
+        tinyxml2::XMLElement* content = findByID(body, "content");
+        if (content)
+        {
+            updateBuilding(content, METAL_FACTORY);
+            updateBuilding(content, CRYSTAL_FACTORY);
+            updateBuilding(content, DEUTERIUM_FACTORY);
+            updateBuilding(content, SOLAR_PANT);
+            updateBuilding(content, SOLAR_SATELLITE);
+            updateBuilding(content, METAL_STORAGE);
+            updateBuilding(content, CRYSTAL_STORAGE);
+            updateBuilding(content, DEUTERIUM_STORAGE);
+            updateBuilding(content, METAL_HIDEOUT);
+            updateBuilding(content, CRYSTAL_HIDEOUT);
+            updateBuilding(content, DEUTERIUM_HIDEOUT);
         }
     }
 }

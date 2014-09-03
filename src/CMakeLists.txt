@@ -9,20 +9,26 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 file(GLOB_RECURSE sources_Init Init/*.cpp Init/*.hpp)
+file(GLOB_RECURSE sources_Buildings Buildings/*.cpp Buildings/*.hpp)
+file(GLOB_RECURSE sources_Utils Utils/*.cpp Utils/*.hpp)
 
 set(EPS_SRCS
   ${EPS_SRCS}
   ${sources_Init}
+  ${sources_Buildings}
+  ${sources_Utils}
 )
 
 include_directories(
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/dep/curl/include
   ${CMAKE_SOURCE_DIR}/dep/restclient-cpp/include
-  ${CMAKE_SOURCE_DIR}/dep/htmlcxx/html
+  ${CMAKE_SOURCE_DIR}/dep/tinyxml2
   ${CMAKE_SOURCE_DIR}/dep/libtidy/include
 
   ${CMAKE_CURRENT_SOURCE_DIR}/Init
+  ${CMAKE_CURRENT_SOURCE_DIR}/Buildings
+  ${CMAKE_CURRENT_SOURCE_DIR}/Utils
 )
 
 add_library(AutOgame STATIC 
@@ -31,7 +37,7 @@ add_library(AutOgame STATIC
 
 target_link_libraries(AutOgame
   restclient-cpp
-  htmlcxx
+  tinyxml2
   libtidy
 )
 
