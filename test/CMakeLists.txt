@@ -19,6 +19,7 @@ set(EPS_SRCS
 
 include_directories(
   ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/src/Common
   ${CMAKE_SOURCE_DIR}/src/Init
 )
 
