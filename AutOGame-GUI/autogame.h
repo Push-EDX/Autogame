@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QMouseEvent>
+#include "loading.h"
 
 namespace Ui {
 class AutOGame;
@@ -21,8 +22,12 @@ private slots:
 
     void on_pushButton_2_pressed();
 
+    void on_loginSend_clicked();
+
 private:
     Ui::AutOGame *ui;
+
+    Loading* loading;
 
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);

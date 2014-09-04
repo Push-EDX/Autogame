@@ -62,15 +62,17 @@ namespace autogame
             currentPlanet = NULL;
             state = UNAUTHORIZED;
         }
-    } *ao;
+    } *ao = NULL;
 
     // Sessions holder
-    std::vector<Autogame*> sessions;
+    std::vector<Autogame> sessions;
 
     int Init(const char* region, int server)
     {
-        ao = new Autogame();
-        sessions.push_back(ao);
+		if (!ao)
+		{
+			return LIBRARY_ERROR;
+		}
 
         char buffer[64] = {0};
 
@@ -84,13 +86,18 @@ namespace autogame
     }
 
     int Session(int session)
-    {
-        if (session > sessions.size())
+	{
+		if (session == sessions.size())
+		{
+			sessions.push_back(Autogame());
+		}
+        else if (session > sessions.size())
         {
             return LIBRARY_ERROR;
         }
 
-        ao = sessions[session];
+        ao = &sessions[session];
+
         return LIBRARY_OK;
     }
 
@@ -157,6 +164,11 @@ namespace autogame
     // This login is done GAME side
     int Login(const char* username, const char* password)
     {
+		if (!ao)
+		{
+			return LIBRARY_ERROR;
+		}
+
         //char* body = new char[strlen(username) + strlen(password) + 18]; // 5(login) 4(pass) 3(kid) 2(&) 3(=) 1(\0)
         char body[512] = { 0 };
         sprintf(body, "uni=%s&kid=&login=%s&pass=%s\0", ao->serverURL.c_str(), username, password);
@@ -223,7 +235,12 @@ namespace autogame
     }
 
     int Update()
-    {
+	{
+		if (!ao)
+		{
+			return LIBRARY_ERROR;
+		}
+
         if (ao->state < LOGGED)
         {
             return LIBRARY_ERROR;
@@ -351,7 +368,7 @@ namespace autogame
             }
         }
 
-        printf("PLANET: %s [%d - %d]\n", planet->name.c_str(), planet->minTemp, planet->maxTemp);
+        //printf("PLANET: %s [%d - %d]\n", planet->name.c_str(), planet->minTemp, planet->maxTemp);
 
         return LIBRARY_OK;
     }
@@ -403,7 +420,7 @@ namespace autogame
             }
         }
 
-        printf("RESOURCES: %.1f %.1f %.1f\n", ao->currentPlanet->resources.metal, ao->currentPlanet->resources.crystal, ao->currentPlanet->resources.deuterium);
+        //printf("RESOURCES: %.1f %.1f %.1f\n", ao->currentPlanet->resources.metal, ao->currentPlanet->resources.crystal, ao->currentPlanet->resources.deuterium);
 
         return LIBRARY_OK;
     }
@@ -440,7 +457,7 @@ namespace autogame
                         ao->currentPlanet->buildings[building].timeTotal = -1;
                         ao->currentPlanet->buildings[building].timeLeft = -1;
                     }
-                    printf("BUILDING %d [%d]: %d\t[%.1f %.1f %.1f]\t[%.1f %.1f %.1f]\n", building, ao->currentPlanet->buildings[building].upgrading, level, ao->currentPlanet->buildings[building].costs.metal, ao->currentPlanet->buildings[building].costs.crystal, ao->currentPlanet->buildings[building].costs.deuterium, ao->currentPlanet->buildings[building].production.metal, ao->currentPlanet->buildings[building].production.crystal, ao->currentPlanet->buildings[building].production.deuterium);
+                    //printf("BUILDING %d [%d]: %d\t[%.1f %.1f %.1f]\t[%.1f %.1f %.1f]\n", building, ao->currentPlanet->buildings[building].upgrading, level, ao->currentPlanet->buildings[building].costs.metal, ao->currentPlanet->buildings[building].costs.crystal, ao->currentPlanet->buildings[building].costs.deuterium, ao->currentPlanet->buildings[building].production.metal, ao->currentPlanet->buildings[building].production.crystal, ao->currentPlanet->buildings[building].production.deuterium);
 
                     return true;
                 }

@@ -20,4 +20,5 @@ add_library(restclient-cpp STATIC ${REST_SRCS})
 
 target_link_libraries(restclient-cpp
   libcurl
+  ws2_32
 )

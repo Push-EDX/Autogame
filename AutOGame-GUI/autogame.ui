@@ -175,14 +175,145 @@ border-radius: 0px;</string>
        <number>20</number>
       </property>
       <item>
-       <widget class="QStackedWidget" name="stackedWidget">
+       <widget class="QStackedWidget" name="widgedPage">
         <property name="styleSheet">
          <string notr="true">border: 1px solid #000;
-background: transparent;</string>
+background: transparent;
+</string>
         </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
+        <widget class="QWidget" name="Login">
+         <property name="styleSheet">
+          <string notr="true">QComboBox,
+QLineEdit {
+  	display: block;
+  	margin: 0;
+  	width: 100%;
+  	font-family: sans-serif;
+  	font-size: 18px;
+  	border-radius: none;
+  	padding: 3px;
+	text-align: center;
+	border: 2px groove;
+	background-color: rgb(189, 90, 3);
+}
+
+QLineEdit:focus {
+
+}
+
+QLabel {
+	border: 0px;
+	font-size: 18px;
+	font-weight: bold;
+	color: #FFF;
+	font-variant: small-caps;
+}
+
+QPushButton {
+	border: 1px solid  #000;
+	border-radius: 2px;
+	background-color: rgb(23, 145, 27);
+	color: #FFF;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 5px;
+}</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <layout class="QFormLayout" name="formLayout">
+            <property name="fieldGrowthPolicy">
+             <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+            </property>
+            <property name="labelAlignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="formAlignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Please select universe and location</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="locale">
+              <property name="currentText">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="label">
+              <property name="styleSheet">
+               <string notr="true"/>
+              </property>
+              <property name="text">
+               <string>Please login to ogame</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="loginUsername">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="placeholderText">
+               <string>USERNAME</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLineEdit" name="loginPassword">
+              <property name="inputMask">
+               <string/>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="echoMode">
+               <enum>QLineEdit::Password</enum>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="placeholderText">
+               <string>PASSWORD</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QPushButton" name="loginSend">
+              <property name="text">
+               <string>LOGIN</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="universe">
+              <property name="styleSheet">
+               <string notr="true">font-variant: small-caps;</string>
+              </property>
+              <property name="inputMask">
+               <string/>
+              </property>
+              <property name="maxLength">
+               <number>3</number>
+              </property>
+              <property name="placeholderText">
+               <string>Universe Nº</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
         <widget class="QWidget" name="Supply">
          <property name="styleSheet">
           <string notr="true">QPushButton {
@@ -201,35 +332,35 @@ background: transparent;</string>
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_5">
               <item>
-               <widget class="QPushButton" name="pushButton_4">
+               <widget class="QPushButton" name="metalFactory_bg">
                 <property name="text">
                  <string>Metal Factory</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_6">
+               <widget class="QPushButton" name="crystalFactory_bg">
                 <property name="text">
                  <string>Crystal Factory</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_5">
+               <widget class="QPushButton" name="deuteriumFactory_bg">
                 <property name="text">
                  <string>Deuterium Factory</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_3">
+               <widget class="QPushButton" name="solarPlant_bg">
                 <property name="text">
                  <string>Solar Plant</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton">
+               <widget class="QPushButton" name="fusionPlant_bg">
                 <property name="text">
                  <string>Fusion Plant</string>
                 </property>
@@ -253,42 +384,42 @@ background: transparent;</string>
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_4">
               <item>
-               <widget class="QPushButton" name="pushButton_10">
+               <widget class="QPushButton" name="metalStorage_bg">
                 <property name="text">
                  <string>Metal Storage</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_11">
+               <widget class="QPushButton" name="crystalStorage_bg">
                 <property name="text">
-                 <string>Crystal Factory</string>
+                 <string>Crystal Storage</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_9">
+               <widget class="QPushButton" name="deuteriumStorage_bg">
                 <property name="text">
-                 <string>Deuterium Factory</string>
+                 <string>Deuterium Storage</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_7">
+               <widget class="QPushButton" name="metalHideout_bg">
                 <property name="text">
                  <string>Metal Hideout</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_8">
+               <widget class="QPushButton" name="crystalHideout_bg">
                 <property name="text">
                  <string>Crystal Hideout</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_12">
+               <widget class="QPushButton" name="deuteriumHideout_bg">
                 <property name="text">
                  <string>Deuterium Hideout</string>
                 </property>
