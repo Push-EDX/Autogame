@@ -59,19 +59,54 @@ namespace autogame
         double metal;
         double crystal;
         double deuterium;
+
+		void operator+=(Resources o)
+		{
+			metal += o.metal;
+			crystal += o.crystal;
+			deuterium += o.deuterium;
+		}
+
+		void operator*=(long s)
+		{
+			metal *= s;
+			crystal *= s;
+			deuterium *= s;
+		}
+
+		bool operator==(long t)
+		{
+			return metal + crystal + deuterium == t;
+		}
     };
 
-    struct Building;
+	struct Building;
+	struct AutoResources : public Resources
+	{
+		long lastMetalUpdate;
+		long lastCrystalUpdate;
+		long lastDeuteriumUpdate;
+
+		void update(long timestamp, Building building, int planetMaxTemp);
+
+	private:
+		inline void updateMetal(long interval, double production){ metal += (production / 3600.0) * interval; }
+		inline void updateCrystal(long interval, double production){ crystal += (production / 3600.0) * interval; }
+		inline void updateDeuterium(long interval, double production){ deuterium += (production / 3600.0) * interval; }
+	};
+
     typedef std::map<int, Building> BuildingsMap;
 
     struct Building
     {
+		int identifier;
         std::string name;
         char level;
         bool available;
         bool upgrading;
         long timeTotal;
         long timeLeft;
+		long timestamp;
 
         std::string fastBuild;
 
@@ -86,6 +121,7 @@ namespace autogame
             upgrading = false;
             timeTotal = 0;
             timeLeft = 0;
+			timestamp = 0;
         }
     };
 
@@ -100,8 +136,11 @@ namespace autogame
         // Name
         std::string name;
 
+		// Last update
+		long timestamp;
+
         // Resources
-        Resources resources;
+        AutoResources resources;
 
         // Min-Max temp
         int minTemp;

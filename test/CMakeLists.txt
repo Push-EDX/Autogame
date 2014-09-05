@@ -19,8 +19,7 @@ set(EPS_SRCS
 
 include_directories(
   ${CMAKE_BINARY_DIR}
-  ${CMAKE_SOURCE_DIR}/src/Common
-  ${CMAKE_SOURCE_DIR}/src/Init
+  ${CMAKE_SOURCE_DIR}/include
 )
 
 add_executable(AutOGame-Test

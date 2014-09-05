@@ -8,16 +8,20 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+file(GLOB_RECURSE include_files ../include/*.cpp ../include/*.hpp)
 file(GLOB_RECURSE sources_Buildings Buildings/*.cpp Buildings/*.hpp)
-file(GLOB_RECURSE sources_Common Common/*.cpp Common/*.hpp)
-file(GLOB_RECURSE sources_Init Init/*.cpp Init/*.hpp)
+file(GLOB_RECURSE sources_Internal Internal/*.cpp Internal/*.hpp)
+file(GLOB_RECURSE sources_Process Process/*.cpp Process/*.hpp)
+file(GLOB_RECURSE sources_Update Update/*.cpp Update/*.hpp)
 file(GLOB_RECURSE sources_Utils Utils/*.cpp Utils/*.hpp)
 
 set(EPS_SRCS
   ${EPS_SRCS}
+  ${include_files}
   ${sources_Buildings}
-  ${sources_Common}
-  ${sources_Init}
+  ${sources_Internal}
+  ${sources_Process}
+  ${sources_Update}
   ${sources_Utils}
 )
 
@@ -29,9 +33,12 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/libtidy/include
   ${CMAKE_SOURCE_DIR}/dep/rapidjson/include
 
+  ${CMAKE_SOURCE_DIR}/include
+
   ${CMAKE_CURRENT_SOURCE_DIR}/Buildings
-  ${CMAKE_CURRENT_SOURCE_DIR}/Common
-  ${CMAKE_CURRENT_SOURCE_DIR}/Init
+  ${CMAKE_CURRENT_SOURCE_DIR}/Internal
+  ${CMAKE_CURRENT_SOURCE_DIR}/Process
+  ${CMAKE_CURRENT_SOURCE_DIR}/Update
   ${CMAKE_CURRENT_SOURCE_DIR}/Utils
 )
 
